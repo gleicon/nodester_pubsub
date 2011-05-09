@@ -47,7 +47,7 @@ ws.createServer(function (websocket) {
 	      presence[resource].removeListener('message', l); 
 	      sys.puts("close");
 	    });
-			console.log(emitter.listeners(presence[resource]));
+			//console.log(emitter.listeners(presence[resource]));
 		});
         
 }).listen(9849);
