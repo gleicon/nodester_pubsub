@@ -45,7 +45,7 @@ ws.createServer(function (websocket) {
 
 	    websocket.addListener("close", function () { 
 	      presence[resource].removeListener('message', l); 
-	      sys.puts("close");
+	      sys.puts("closed: " + resource);
 	    });
 			//console.log(emitter.listeners(presence[resource]));
 		});
