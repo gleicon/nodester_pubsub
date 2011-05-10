@@ -2,7 +2,7 @@
 
 
 var sys = require("sys");
-var ws = require("./lib/node.ws.js/ws")
+var ws = require("./lib/node.ws.js/ws.js")
 var http = require("http");
 var qs = require("querystring");
 
