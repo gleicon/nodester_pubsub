@@ -1,55 +1,61 @@
-// gleicon 2011 | http://7co.cc | http://zenmachine.wordpress.com | http://github.com/gleicon
+// gleicon 2010 | http://zenmachine.wordpress.com | http://github.com/gleicon
 
 
 var sys = require("sys");
 var ws = require("./lib/node.ws.js/ws")
+var http = require("http");
 var qs = require("querystring");
 
-process.on('uncaughtException', function (err) {
-  console.log('exception: ' + err);
-});
+sys.puts('Initializing ws server');
 
-console.log('Initializing Watercooler WS server');
-
-var presence = [];
 var e_msg = new process.EventEmitter();
 
+server = http.createServer(function (req, res) {
+  if (req.url == '/publish') {
+    req.on('data', function(d) {
+            params = qs.parse(d);
+            m = params['body'];
+            if (m != null) e_msg.emit('message', m); 
+    });
+    res.writeHead(200, {'Content-type':'text/plain'});
+    res.end();
+  } else {
+    res.writeHead(404, {'Content-type':'text/plain'});
+    res.write('not found');
+    res.end();
+  }
+}).listen(8081);
 
-ws.createServer(function (websocket) {
+ ws.createServer(function (websocket) {
     var id;
-		var l = function(m) { 
-		  if (m.id != id) websocket.write(m.data);
-		}
- 
-		websocket.addListener("connect", function (resource) { 
-      console.log("connect: " + resource);
-      id = resource + " " + new Date().getTime() + "-" + process.pid;
+    websocket.addListener("connect", function (resource) { 
+      sys.puts("connect: " + resource);
+      id = new Date().getTime(); 
+    });
 
-			if (presence[resource] == null) {
-				presence[resource] = new process.EventEmitter();
-			}
-			
-			presence[resource].addListener('message', l);
-			
-    	var to = setTimeout(function() {
-	      presence[resource].removeListener('message', l);
-	      sys.puts("timeout from: " + websocket.remoteAddress);
-	    }, 60 * 1000 * 60);		
+    var l = function(m) { 
+      if (m.id != id) websocket.write(m.data);
+    }
 
-	    websocket.addListener("data", function(data) {
-	      var o = new Array();
-	      o['id'] = id;
-	      o['data'] = data;
-	      presence[resource].emit('message', o);
-	    });
+    e_msg.addListener('message', l)
 
-	    websocket.addListener("close", function () { 
-	      presence[resource].removeListener('message', l); 
-	      sys.puts("closed: " + resource);
-	    });
-			//console.log(emitter.listeners(presence[resource]));
-		});
-        
-}).listen(9849);
+    var to = setTimeout(function() {
+      e_msg.removeListener('message', l);
+      sys.puts("timeout from: " + websocket.remoteAddress);
+    }, 60 * 1000 * 60);
+
+    websocket.addListener("data", function(data) {
+      var o = new Array();
+      o['id'] = id;
+      o['data'] = data;
+      e_msg.emit('message', o);
+    });
+    
+    websocket.addListener("close", function () { 
+      e_msg.removeListener('message', l); 
+      sys.puts("close");
+    });
+    
+}).listen(8080);
 
 
