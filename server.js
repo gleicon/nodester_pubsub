@@ -2,45 +2,56 @@
 
 
 var sys = require("sys");
-var ws = require("./lib/node.ws.js/ws.js")
-var http = require("http");
+var http = require("http")
 var qs = require("querystring");
 
-sys.puts('Initializing ws server');
+process.on('uncaughtException', function (err) {
+	console.log('exception: ' + err);
+});
+
 
 var e_msg = new process.EventEmitter();
-
-ws.createServer(function (websocket) {
-    var id;
-    websocket.addListener("connect", function (resource) { 
-      console.log("connect: " + resource);
-      id = new Date().getTime(); 
-    });
-
-    var l = function(m) { 
-      if (m.id != id) websocket.write(m.data);
-    }
-
-    e_msg.addListener('message', l)
-
-    var to = setTimeout(function() {
-      e_msg.removeListener('message', l);
-      console.log("timeout from: " + websocket.remoteAddress);
-    }, 60 * 1000 * 60);
-
-    websocket.addListener("data", function(data) {
-      console.log(data);
-			var o = new Array();
-      o['id'] = id;
-      o['data'] = data;
-      e_msg.emit('message', o);
-    });
-    
-    websocket.addListener("close", function () { 
-      e_msg.removeListener('message', l); 
-      console.log("close");
-    });
-    
-}).listen(9849);
+var users = 0;
 
 
+setTimeout(connected_users, 1000);
+
+function connected_users() {
+  console.log('Connected users: '+users);
+  setTimeout(connected_users, 30 * 1000);
+}
+
+
+console.log('Initializing COMET pub/sub server');
+
+server = http.createServer(function (req, res) {
+      l = function(m) { 
+        res.write(m);
+        res.write('\n');
+      }
+      if (req.url == '/subscribe') {
+        req.connection.setTimeout(0);
+        res.writeHead(200, {'Content-type':'text/plain'});
+        e_msg.addListener('message', l);
+
+      } else if (req.url == '/publish') {
+        req.on('data', function(d) {
+          params = qs.parse(d);
+          m = params['body'];
+          if (m != null) e_msg.emit('message', m); 
+        });
+        res.writeHead(200, {'Content-type':'text/plain'});
+        res.write('ok\n');
+        res.end();
+      } else {
+        res.writeHead(404, {'Content-type':'text/plain'});
+        res.write('not found');
+        res.end();
+      }
+});
+
+server.maxConnections = 10000;
+server.on('request', function() { console.log('conn'); users++; });
+server.on('clientError', function() {if (users > 0) users--; }); 
+
+server.listen(9849);
