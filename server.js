@@ -13,7 +13,7 @@ var e_msg = new process.EventEmitter();
 ws.createServer(function (websocket) {
     var id;
     websocket.addListener("connect", function (resource) { 
-      sys.puts("connect: " + resource);
+      console.log("connect: " + resource);
       id = new Date().getTime(); 
     });
 
@@ -25,11 +25,12 @@ ws.createServer(function (websocket) {
 
     var to = setTimeout(function() {
       e_msg.removeListener('message', l);
-      sys.puts("timeout from: " + websocket.remoteAddress);
+      console.log("timeout from: " + websocket.remoteAddress);
     }, 60 * 1000 * 60);
 
     websocket.addListener("data", function(data) {
-      var o = new Array();
+      console.log(data);
+			var o = new Array();
       o['id'] = id;
       o['data'] = data;
       e_msg.emit('message', o);
@@ -37,7 +38,7 @@ ws.createServer(function (websocket) {
     
     websocket.addListener("close", function () { 
       e_msg.removeListener('message', l); 
-      sys.puts("close");
+      console.log("close");
     });
     
 }).listen(9849);
