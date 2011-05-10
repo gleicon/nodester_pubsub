@@ -10,23 +10,7 @@ sys.puts('Initializing ws server');
 
 var e_msg = new process.EventEmitter();
 
-server = http.createServer(function (req, res) {
-  if (req.url == '/publish') {
-    req.on('data', function(d) {
-            params = qs.parse(d);
-            m = params['body'];
-            if (m != null) e_msg.emit('message', m); 
-    });
-    res.writeHead(200, {'Content-type':'text/plain'});
-    res.end();
-  } else {
-    res.writeHead(404, {'Content-type':'text/plain'});
-    res.write('not found');
-    res.end();
-  }
-}).listen(8081);
-
- ws.createServer(function (websocket) {
+ws.createServer(function (websocket) {
     var id;
     websocket.addListener("connect", function (resource) { 
       sys.puts("connect: " + resource);
@@ -56,6 +40,6 @@ server = http.createServer(function (req, res) {
       sys.puts("close");
     });
     
-}).listen(8080);
+}).listen(9849);
 
 
