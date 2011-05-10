@@ -35,11 +35,17 @@ server = http.createServer(function (req, res) {
         e_msg.addListener('message', l);
 
       } else if (req.url == '/publish') {
+				var m ="";
         req.on('data', function(d) {
-          params = qs.parse(d);
-          m = params['body'];
-          if (m != null) e_msg.emit('message', m); 
+          m = m + d 
+					console.log(d);
         });
+				req.on('end', function(){
+					params = qs.parse(m);
+					m = params['body'];
+					if (m != null) e_msg.emit('message', m); 
+				});
+				
         res.writeHead(200, {'Content-type':'text/plain'});
         res.write('ok\n');
         res.end();
