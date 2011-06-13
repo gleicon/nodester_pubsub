@@ -63,9 +63,10 @@ server = http.createServer(function (req, res) {
         case '/js/libs/jquery-1.5.1.min.js':
         case '/js/libs/modernizr-1.7.min.js':
         case '/js/script.js':
-          render(res, path, 'js');
+          render(res, path, 'text/javascript');
           break
-
+        case '/robots.txt':
+          render(res, path, 'text/plain');
         default:
           req.connection.setTimeout(0);
           res.writeHead(200, {'Content-type':'text/plain'});
