@@ -1,0 +1,11 @@
+Pub/Sub over http using COMET endpoint for the Nodester PaaS
+  Running on: http://pubsub.nodester.com/
+  
+* open a terminal and type:
+      curl http://pubsub.nodester.com/lmao
+* open a second term and type:
+      curl -d 'body=sup' http://pubsub.nodester.com/lmao
+
+Watch first terminal in amazement. 
+Bear in mind that depending on the message size, it can take some time to be rendered on a browser, but will be retrieved by javascript.
+
